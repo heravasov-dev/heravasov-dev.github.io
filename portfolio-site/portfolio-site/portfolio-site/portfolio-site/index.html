@@ -1,0 +1,353 @@
+﻿<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Building fast, functional web software and interactive interfaces with clear structure and measurable performance." />
+    <title>Your Name // Software & Systems Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+
+      body {
+        background-color: #010103;
+      }
+
+      /* Şəffaf kosmik şüşə panellər (arxadakı real qalaktika görünsün deyə balanslaşdırılıb) */
+      .cosmic-panel {
+        background: rgba(5, 7, 15, 0.48);
+        backdrop-filter: blur(16px) saturate(135%);
+        -webkit-backdrop-filter: blur(16px) saturate(135%);
+        border: 1px solid rgba(226, 232, 240, 0.12);
+        border-radius: 18px;
+        box-shadow:
+          0 28px 65px -15px rgba(0, 0, 0, 0.92),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.09);
+        transition: border-color 0.5s ease, box-shadow 0.5s ease, background-color 0.5s ease;
+      }
+
+      .cosmic-panel:hover {
+        background: rgba(8, 11, 22, 0.62);
+        border-color: rgba(251, 191, 36, 0.35);
+        box-shadow:
+          0 32px 75px -15px rgba(139, 92, 246, 0.2),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      }
+
+      .nav-link.active {
+        color: #fde68a;
+        text-shadow: 0 0 14px rgba(251, 191, 36, 0.65);
+      }
+
+      /* Aşağı üfüqdən planet kimi yavaşca yüklənərək orbitə çıxma */
+      .planet-emerge {
+        opacity: 0;
+        filter: blur(22px) brightness(0.08);
+        transform: translate3d(0, 125px, 0) scale(0.82) rotate(-1.8deg);
+        transition:
+          opacity 1.65s cubic-bezier(0.16, 1, 0.3, 1),
+          filter 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 1.7s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, filter, transform;
+      }
+
+      .planet-emerge.in-orbit {
+        opacity: 1;
+        filter: blur(0px) brightness(1);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+      }
+
+      .scroll-parallax {
+        will-change: transform;
+      }
+
+      @keyframes astronaut-breathe {
+        0%, 100% { transform: translateY(-5px) rotate(-2.5deg); }
+        50% { transform: translateY(5px) rotate(2.5deg); }
+      }
+      .astronaut-float {
+        animation: astronaut-breathe 5s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body class="text-zinc-100 font-sans antialiased selection:bg-amber-400 selection:text-zinc-950 overflow-x-hidden">
+    <!-- JWST / Hubble Style Deep Space & Planets Canvas -->
+    <canvas id="bg-canvas" class="fixed inset-0 -z-10 w-full h-full pointer-events-none"></canvas>
+
+    <!-- Kursoru izləyən realistik EVA Kosmonavt (Fənər işığı + Reaktiv itələyici) -->
+    <div id="astronaut-follower" class="fixed top-0 left-0 z-20 pointer-events-none hidden sm:block will-change-transform" style="width: 68px; height: 86px;">
+      <div id="astronaut-tilt" class="w-full h-full transition-transform duration-300 ease-out">
+        <div class="astronaut-float w-full h-full drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+          <svg viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full overflow-visible">
+            <defs>
+              <!-- Qızılı günəş filtrli dəbilqə şüşəsi (Real NASA EMU Gold Visor) -->
+              <radialGradient id="goldVisor" cx="38%" cy="35%" r="60%">
+                <stop offset="0%" stop-color="#fef08a" stop-opacity="0.98" />
+                <stop offset="35%" stop-color="#f59e0b" stop-opacity="0.92" />
+                <stop offset="75%" stop-color="#78350f" stop-opacity="0.96" />
+                <stop offset="100%" stop-color="#090d16" stop-opacity="1" />
+              </radialGradient>
+              <!-- Skafandr işıq-kölgə həcmi -->
+              <linearGradient id="emuSuit" x1="25" y1="15" x2="105" y2="145" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="45%" stop-color="#cbd5e1" />
+                <stop offset="80%" stop-color="#475569" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+              <!-- Dəbilqə fənəri şüası -->
+              <linearGradient id="headlampBeam" x1="78" y1="24" x2="175" y2="5" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.42" />
+                <stop offset="50%" stop-color="#bae6fd" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#bae6fd" stop-opacity="0" />
+              </linearGradient>
+              <!-- İtələyici qaz alovu -->
+              <linearGradient id="thrusterGas" x1="60" y1="92" x2="60" y2="128" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.95" />
+                <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.4" />
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <!-- Dəbilqə fənərinin kosmosa yayılan işıq konusu -->
+            <polygon points="78,21 175,-12 175,32 78,28" fill="url(#headlampBeam)" />
+
+            <!-- Arxa həyat dəstək çantası (PLSS) -->
+            <rect x="33" y="42" width="54" height="48" rx="9" fill="#1e293b" stroke="#94a3b8" stroke-width="1.4" />
+            <rect x="38" y="47" width="44" height="14" rx="3" fill="#0f172a" />
+
+            <!-- Dinamik mikro-itələyici alovları (hərəkət etdikcə parlayır) -->
+            <g id="astro-thrusters" opacity="0.25" class="transition-opacity duration-200">
+              <path d="M42 90 L37 124 L47 90 Z" fill="url(#thrusterGas)" />
+              <path d="M78 90 L83 124 L73 90 Z" fill="url(#thrusterGas)" />
+            </g>
+
+            <!-- Sol qol (bükülmüş, çəkisizlikdə) -->
+            <path d="M39 52 C22 52, 13 40, 17 29 C20 22, 28 24, 27 32 C26 39, 32 45, 41 47 Z" fill="url(#emuSuit)" />
+            <!-- Sağ qol -->
+            <path d="M81 52 C98 52, 108 62, 103 73 C100 80, 91 77, 92 69 C94 62, 87 57, 79 59 Z" fill="url(#emuSuit)" />
+
+            <!-- Gövdə -->
+            <rect x="39" y="45" width="42" height="46" rx="15" fill="url(#emuSuit)" />
+            <!-- Sinə idarəetmə modulu (DCM) -->
+            <rect x="48" y="54" width="24" height="16" rx="3" fill="#0f172a" stroke="#64748b" stroke-width="1.2" />
+            <circle cx="53" cy="60" r="1.8" fill="#ef4444" />
+            <circle cx="60" cy="60" r="1.8" fill="#38bdf8" />
+            <circle cx="67" cy="60" r="1.8" fill="#22c55e" />
+            <rect x="52" y="65" width="16" height="2" rx="1" fill="#94a3b8" />
+
+            <!-- Ayaqlar və skafandr çəkmələri -->
+            <path d="M43 88 L36 125 C35 132, 45 134, 48 127 L56 91 Z" fill="url(#emuSuit)" />
+            <path d="M77 88 L86 120 C88 127, 78 130, 75 123 L64 91 Z" fill="url(#emuSuit)" />
+
+            <!-- Dəbilqə -->
+            <circle cx="60" cy="28" r="21" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" />
+            <!-- Yan fənər korpusu -->
+            <rect x="75" y="21" width="6" height="7" rx="1.5" fill="#334155" stroke="#cbd5e1" stroke-width="1" />
+            <!-- Qızılı reflektor şüşə (Visor) -->
+            <ellipse cx="62" cy="28" rx="15" ry="13" fill="url(#goldVisor)" stroke="#fef3c7" stroke-width="1" />
+            <!-- Şüşədə qalaktika işığı əksi -->
+            <path d="M52 20 Q60 16 69 21" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.85" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 translate-y-16 opacity-0 transition-all duration-300 bg-amber-400 text-zinc-950 px-4 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-[0_0_25px_rgba(251,191,36,0.45)]">
+      Copied to clipboard
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-[#010103]/65 backdrop-blur-xl border-b border-white/[0.06]">
+      <div id="scroll-progress" class="h-[2px] bg-gradient-to-r from-amber-300 via-purple-400 to-cyan-300 w-0"></div>
+
+      <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href="#hero" class="font-mono text-xs font-bold tracking-wider uppercase text-zinc-100 hover:text-amber-300 transition flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_10px_#fcd34d]"></span>
+          yourusername.github.io
+        </a>
+
+        <nav class="hidden sm:flex items-center gap-7 font-mono text-xs text-zinc-400">
+          <a href="#about" data-nav="about" class="nav-link hover:text-zinc-100 transition">01. About</a>
+          <a href="#projects" data-nav="projects" class="nav-link hover:text-zinc-100 transition">02. Work</a>
+          <a href="#contact" data-nav="contact" class="nav-link hover:text-zinc-100 transition">03. Contact</a>
+        </nav>
+
+        <div id="hud-telemetry" class="hidden lg:block font-mono text-[11px] text-zinc-400 tabular-nums bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+          ORBIT: 0% | DEEP_FIELD
+        </div>
+
+        <button id="menu-btn" class="sm:hidden font-mono text-xs text-zinc-300 hover:text-amber-300">
+          [MENU]
+        </button>
+      </div>
+
+      <nav id="mobile-menu" class="hidden sm:hidden border-t border-white/[0.06] bg-[#010103]/95 px-6 py-4 flex-col gap-3 font-mono text-xs text-zinc-300">
+        <a href="#about" class="mobile-link hover:text-amber-300">01. About</a>
+        <a href="#projects" class="mobile-link hover:text-amber-300">02. Work</a>
+        <a href="#contact" class="mobile-link hover:text-amber-300">03. Contact</a>
+      </nav>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 relative z-10">
+      <!-- Hero -->
+      <section id="hero" class="min-h-[88vh] flex flex-col justify-center py-12">
+        <div class="scroll-parallax" data-speed="-0.05">
+          <div class="cosmic-panel p-8 sm:p-12 planet-emerge">
+            <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-zinc-400 border-b border-white/[0.08] pb-5 mb-7">
+              <span class="tracking-wide uppercase text-amber-200/90">Software & Systems Engineer</span>
+              <span class="inline-flex items-center gap-2 text-cyan-300 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse"></span>
+                Available for work
+              </span>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-zinc-300 mb-5">
+              Your Name
+            </h1>
+
+            <p class="max-w-2xl text-base sm:text-lg text-zinc-300/90 leading-relaxed mb-9">
+              Building fast, functional web software and interactive interfaces with clear structure and measurable performance.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+              <a href="#projects" class="px-6 py-3 rounded-lg bg-gradient-to-r from-amber-400 to-amber-300 text-zinc-950 font-bold uppercase tracking-wider hover:from-amber-300 hover:to-yellow-200 transition shadow-[0_0_25px_rgba(251,191,36,0.35)]">
+                Explore Orbit
+              </a>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-lg border border-white/15 bg-white/[0.03] text-zinc-200 uppercase tracking-wider hover:border-amber-300/60 hover:text-amber-200 transition">
+                GitHub Profile ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About & Capabilities -->
+      <section id="about" class="py-28">
+        <div class="scroll-parallax" data-speed="-0.035">
+          <div class="cosmic-panel p-8 sm:p-10 planet-emerge">
+            <div class="font-mono text-xs text-amber-300/90 uppercase tracking-widest mb-2">01 // Planetary Systems & Stack</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">System Capabilities</h2>
+            <p class="text-sm sm:text-base text-zinc-300/85 max-w-2xl leading-relaxed mb-8">
+              Engineered with multi-octave FBM nebula rendering, spectral starlight physics, and zero framework overhead. Sections rise smoothly into orbit as you explore deep space.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 hover:border-amber-300/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Languages</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">JS / TypeScript / Python</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 hover:border-amber-300/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Graphics</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">HTML5 Canvas / WebGL</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 hover:border-amber-300/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Infrastructure</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Linux / Docker / CI/CD</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 hover:border-amber-300/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Core Focus</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Zero-Gravity UX</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects" class="py-28">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-10 planet-emerge">
+          <div>
+            <div class="font-mono text-xs text-amber-300/90 uppercase tracking-widest mb-2">02 // Celestial Bodies</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">Featured Repositories</h2>
+          </div>
+          <span id="repo-status" class="font-mono text-xs text-zinc-400 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+            SYNCING...
+          </span>
+        </div>
+
+        <div id="projects-grid" class="grid sm:grid-cols-2 gap-7">
+          <div class="scroll-parallax" data-speed="-0.03">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between planet-emerge">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>01 // JWST_DEEP_FIELD</span>
+                  <span class="text-cyan-300 bg-cyan-400/10 px-2.5 py-0.5 rounded-full">JavaScript</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Photorealistic Galaxy Engine</h3>
+                <p class="text-sm text-zinc-300/85 leading-relaxed mb-6">
+                  FBM cosmic dust clouds, O-M spectral starfields, banded gas giants with Cassini ring divisions, and EVA thruster physics.
+                </p>
+              </div>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-amber-300 uppercase tracking-wider hover:text-amber-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+
+          <div class="scroll-parallax" data-speed="-0.055">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between planet-emerge" style="transition-delay: 240ms;">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>02 // STATIC_ARCH</span>
+                  <span class="text-purple-300 bg-purple-400/10 px-2.5 py-0.5 rounded-full">HTML / CSS</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Cosmic Portfolio Base</h3>
+                <p class="text-sm text-zinc-300/85 leading-relaxed mb-6">
+                  Zero-dependency static architecture engineered for silky-smooth rendering on GitHub Pages.
+                </p>
+              </div>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-amber-300 uppercase tracking-wider hover:text-amber-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="py-28">
+        <div class="scroll-parallax" data-speed="-0.02">
+          <div class="cosmic-panel p-8 sm:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6 planet-emerge">
+            <div>
+              <div class="font-mono text-xs text-amber-300/90 uppercase tracking-widest mb-2">03 // Subspace Telemetry</div>
+              <h2 class="text-2xl font-bold text-white">Initiate Contact</h2>
+              <p class="text-sm text-zinc-300/85 mt-1.5 max-w-md">
+                Open for software engineering roles, system architecture consulting, and creative technical builds.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3 shrink-0 font-mono">
+              <button id="copy-email-btn" data-email="you@example.com" class="px-5 py-3 rounded-lg border border-white/15 text-zinc-200 text-xs uppercase tracking-wider hover:border-amber-300/60 hover:text-amber-200 transition">
+                Copy Email
+              </button>
+              <a href="mailto:you@example.com" class="px-6 py-3 rounded-lg bg-gradient-to-r from-amber-400 to-amber-300 text-zinc-950 text-xs font-bold uppercase tracking-wider hover:from-amber-300 hover:to-yellow-200 transition text-center shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                you@example.com
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-white/[0.06] py-8 mt-8 text-center font-mono text-xs text-zinc-500 relative z-10">
+      <span id="year"></span> Your Name // yourusername.github.io
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

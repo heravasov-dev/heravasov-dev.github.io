@@ -1,0 +1,338 @@
+﻿<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Building fast, functional web software and interactive interfaces with clear structure and measurable performance." />
+    <title>Your Name // Software & Systems Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+
+      body {
+        background-color: #020306;
+        background-image:
+          radial-gradient(ellipse at 18% 15%, rgba(88, 28, 135, 0.18), transparent 48%),
+          radial-gradient(ellipse at 82% 78%, rgba(6, 182, 212, 0.12), transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.35), #020306 100%);
+      }
+
+      .cosmic-panel {
+        background: rgba(8, 11, 22, 0.58);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(167, 139, 250, 0.16);
+        border-radius: 18px;
+        box-shadow:
+          0 25px 60px -15px rgba(0, 0, 0, 0.85),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+        transition: border-color 0.45s ease, box-shadow 0.45s ease;
+      }
+
+      .cosmic-panel:hover {
+        border-color: rgba(192, 132, 252, 0.48);
+        box-shadow:
+          0 30px 70px -15px rgba(139, 92, 246, 0.24),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+      }
+
+      .nav-link.active {
+        color: #c084fc;
+        text-shadow: 0 0 14px rgba(192, 132, 252, 0.6);
+      }
+
+      /* Planet kimi aşağı üfüqdən orbitə çıxan yüklənmə (Planetary Orbit Rise) */
+      .planet-emerge {
+        opacity: 0;
+        filter: blur(18px) brightness(0.15);
+        transform: translate3d(0, 110px, 0) scale(0.84) rotate(-1.5deg);
+        transition:
+          opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1),
+          filter 1.65s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 1.55s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, filter, transform;
+      }
+
+      .planet-emerge.in-orbit {
+        opacity: 1;
+        filter: blur(0px) brightness(1);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+      }
+
+      .scroll-parallax {
+        will-change: transform;
+      }
+
+      /* Kosmonavtın kosmik süzülmə animasiyası */
+      @keyframes astronaut-breathe {
+        0%, 100% { transform: translateY(-4px) rotate(-2deg); }
+        50% { transform: translateY(4px) rotate(2deg); }
+      }
+      .astronaut-float {
+        animation: astronaut-breathe 4.5s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body class="text-zinc-100 font-sans antialiased selection:bg-purple-500 selection:text-white overflow-x-hidden">
+    <!-- Deep Space, Galaxy & Planets Canvas -->
+    <canvas id="bg-canvas" class="fixed inset-0 -z-10 w-full h-full pointer-events-none"></canvas>
+
+    <!-- Kursoru izləyən balaca real kosmonavt silueti -->
+    <div id="astronaut-follower" class="fixed top-0 left-0 z-20 pointer-events-none hidden sm:block will-change-transform" style="width: 58px; height: 74px;">
+      <div id="astronaut-tilt" class="w-full h-full transition-transform duration-300 ease-out">
+        <div class="astronaut-float w-full h-full drop-shadow-[0_0_16px_rgba(167,139,250,0.45)]">
+          <!-- Realistik kosmonavt silueti (SVG) -->
+          <svg viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+            <defs>
+              <radialGradient id="visorGlow" cx="45%" cy="40%" r="55%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.95" />
+                <stop offset="55%" stop-color="#6366f1" stop-opacity="0.85" />
+                <stop offset="100%" stop-color="#090d16" stop-opacity="1" />
+              </radialGradient>
+              <linearGradient id="suitSilhouette" x1="20" y1="15" x2="100" y2="140" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#e2e8f0" stop-opacity="0.92" />
+                <stop offset="50%" stop-color="#64748b" stop-opacity="0.82" />
+                <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.95" />
+              </linearGradient>
+              <linearGradient id="jetFlame" x1="60" y1="88" x2="60" y2="115" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <!-- Sırt çantası (PLSS Life Support) -->
+            <rect x="34" y="42" width="52" height="44" rx="10" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5" />
+            <!-- İtələyici mikro-mühərrik alovu -->
+            <path d="M43 86 L40 106 L47 86 Z" fill="url(#jetFlame)" />
+            <path d="M77 86 L80 106 L73 86 Z" fill="url(#jetFlame)" />
+
+            <!-- Sol və sağ qollar (çəkisizlikdə açıq) -->
+            <path d="M38 52 C22 50, 14 38, 18 28 C21 22, 29 25, 28 32 C26 39, 32 44, 41 46 Z" fill="url(#suitSilhouette)" />
+            <path d="M82 52 C98 50, 106 62, 102 72 C99 78, 91 75, 92 68 C94 61, 88 56, 79 58 Z" fill="url(#suitSilhouette)" />
+
+            <!-- Gövdə (Skafandr) -->
+            <rect x="40" y="45" width="40" height="44" rx="14" fill="url(#suitSilhouette)" />
+            <!-- Sinə idarəetmə bloku -->
+            <rect x="49" y="54" width="22" height="14" rx="3" fill="#090d16" stroke="#a78bfa" stroke-width="1.2" />
+            <circle cx="54" cy="61" r="1.8" fill="#38bdf8" />
+            <circle cx="60" cy="61" r="1.8" fill="#c084fc" />
+            <circle cx="66" cy="61" r="1.8" fill="#34d399" />
+
+            <!-- Ayaqlar (süzülən vəziyyətdə) -->
+            <path d="M44 86 L37 122 C36 128, 45 130, 48 124 L56 89 Z" fill="url(#suitSilhouette)" />
+            <path d="M76 86 L85 117 C87 123, 78 126, 75 120 L64 89 Z" fill="url(#suitSilhouette)" />
+
+            <!-- Dəbilqə (Helmet) -->
+            <circle cx="60" cy="28" r="20" fill="#1e293b" stroke="#cbd5e1" stroke-width="1.8" />
+            <!-- Dəbilqə şüşəsi (Visor) -->
+            <ellipse cx="62" cy="28" rx="14" ry="12" fill="url(#visorGlow)" stroke="#e0e7ff" stroke-width="1" />
+            <!-- Şüşədə kosmik parıltı əksi -->
+            <path d="M54 21 Q61 18 68 22" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.75" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 translate-y-16 opacity-0 transition-all duration-300 bg-purple-500 text-white px-4 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+      Copied to clipboard
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-[#020306]/75 backdrop-blur-xl border-b border-white/[0.06]">
+      <div id="scroll-progress" class="h-[2px] bg-gradient-to-r from-indigo-500 via-purple-400 to-cyan-300 w-0"></div>
+
+      <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href="#hero" class="font-mono text-xs font-bold tracking-wider uppercase text-zinc-100 hover:text-purple-300 transition flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_10px_#c084fc]"></span>
+          yourusername.github.io
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden sm:flex items-center gap-7 font-mono text-xs text-zinc-400">
+          <a href="#about" data-nav="about" class="nav-link hover:text-zinc-100 transition">01. About</a>
+          <a href="#projects" data-nav="projects" class="nav-link hover:text-zinc-100 transition">02. Work</a>
+          <a href="#contact" data-nav="contact" class="nav-link hover:text-zinc-100 transition">03. Contact</a>
+        </nav>
+
+        <!-- Telemetry HUD -->
+        <div id="hud-telemetry" class="hidden lg:block font-mono text-[11px] text-zinc-400 tabular-nums bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+          ORBIT: 0% | EVA: ACTIVE
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="menu-btn" class="sm:hidden font-mono text-xs text-zinc-300 hover:text-purple-400">
+          [MENU]
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <nav id="mobile-menu" class="hidden sm:hidden border-t border-white/[0.06] bg-[#020306]/95 px-6 py-4 flex-col gap-3 font-mono text-xs text-zinc-300">
+        <a href="#about" class="mobile-link hover:text-purple-400">01. About</a>
+        <a href="#projects" class="mobile-link hover:text-purple-400">02. Work</a>
+        <a href="#contact" class="mobile-link hover:text-purple-400">03. Contact</a>
+      </nav>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 relative z-10">
+      <!-- Hero -->
+      <section id="hero" class="min-h-[88vh] flex flex-col justify-center py-12">
+        <div class="scroll-parallax" data-speed="-0.05">
+          <div class="cosmic-panel p-8 sm:p-12 planet-emerge">
+            <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-zinc-400 border-b border-white/[0.07] pb-5 mb-7">
+              <span class="tracking-wide uppercase text-purple-200/90">Software & Systems Engineer</span>
+              <span class="inline-flex items-center gap-2 text-cyan-300 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse"></span>
+                Available for work
+              </span>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-100 to-cyan-200 mb-5">
+              Your Name
+            </h1>
+
+            <p class="max-w-2xl text-base sm:text-lg text-zinc-300/90 leading-relaxed mb-9">
+              Building fast, functional web software and interactive interfaces with clear structure and measurable performance.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+              <a href="#projects" class="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold uppercase tracking-wider hover:from-purple-400 hover:to-indigo-400 transition shadow-[0_0_25px_rgba(168,85,247,0.4)]">
+                Explore Orbit
+              </a>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-lg border border-white/15 bg-white/[0.02] text-zinc-200 uppercase tracking-wider hover:border-purple-400/60 hover:text-purple-300 transition">
+                GitHub Profile ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About & Capabilities -->
+      <section id="about" class="py-28">
+        <div class="scroll-parallax" data-speed="-0.035">
+          <div class="cosmic-panel p-8 sm:p-10 planet-emerge">
+            <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">01 // Planetary Systems & Stack</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">System Capabilities</h2>
+            <p class="text-sm sm:text-base text-zinc-300/80 max-w-2xl leading-relaxed mb-8">
+              Engineered with orbital inertia physics and zero framework overhead. Sections rise smoothly into orbit as you navigate through deep space.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Languages</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">JS / TypeScript / Python</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Graphics</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">HTML5 Canvas / WebGL</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Infrastructure</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Linux / Docker / CI/CD</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Core Focus</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Zero-Gravity UX</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects" class="py-28">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-10 planet-emerge">
+          <div>
+            <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">02 // Celestial Bodies</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">Featured Repositories</h2>
+          </div>
+          <span id="repo-status" class="font-mono text-xs text-zinc-400 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+            SYNCING...
+          </span>
+        </div>
+
+        <div id="projects-grid" class="grid sm:grid-cols-2 gap-7">
+          <div class="scroll-parallax" data-speed="-0.03">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between planet-emerge">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>01 // ORBITAL_GALAXY</span>
+                  <span class="text-cyan-300 bg-cyan-400/10 px-2.5 py-0.5 rounded-full">JavaScript</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Deep Space & Planet Engine</h3>
+                <p class="text-sm text-zinc-300/80 leading-relaxed mb-6">
+                  Logarithmic spiral starfield with ringed gas giants, zero-gravity EVA astronaut tracking, and orbital scroll physics.
+                </p>
+              </div>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-purple-300 uppercase tracking-wider hover:text-purple-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+
+          <div class="scroll-parallax" data-speed="-0.055">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between planet-emerge" style="transition-delay: 220ms;">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>02 // STATIC_ARCH</span>
+                  <span class="text-purple-300 bg-purple-400/10 px-2.5 py-0.5 rounded-full">HTML / CSS</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Cosmic Portfolio Base</h3>
+                <p class="text-sm text-zinc-300/80 leading-relaxed mb-6">
+                  Zero-dependency static architecture engineered for silky-smooth rendering on GitHub Pages.
+                </p>
+              </div>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-purple-300 uppercase tracking-wider hover:text-purple-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="py-28">
+        <div class="scroll-parallax" data-speed="-0.02">
+          <div class="cosmic-panel p-8 sm:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6 planet-emerge">
+            <div>
+              <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">03 // Subspace Telemetry</div>
+              <h2 class="text-2xl font-bold text-white">Initiate Contact</h2>
+              <p class="text-sm text-zinc-300/80 mt-1.5 max-w-md">
+                Open for software engineering roles, system architecture consulting, and creative technical builds.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3 shrink-0 font-mono">
+              <button id="copy-email-btn" data-email="you@example.com" class="px-5 py-3 rounded-lg border border-white/15 text-zinc-200 text-xs uppercase tracking-wider hover:border-purple-400/60 hover:text-purple-300 transition">
+                Copy Email
+              </button>
+              <a href="mailto:you@example.com" class="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold uppercase tracking-wider hover:from-purple-400 hover:to-indigo-400 transition text-center shadow-[0_0_20px_rgba(168,85,247,0.35)]">
+                you@example.com
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-white/[0.06] py-8 mt-8 text-center font-mono text-xs text-zinc-500 relative z-10">
+      <span id="year"></span> Your Name // yourusername.github.io
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

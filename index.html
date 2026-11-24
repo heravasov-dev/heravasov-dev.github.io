@@ -1,0 +1,274 @@
+﻿<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Building fast, functional web software and interactive interfaces with clear structure and measurable performance." />
+    <title>Your Name // Software & Systems Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+
+      body {
+        background-color: #030408;
+        background-image: 
+          radial-gradient(ellipse at 20% 20%, rgba(88, 28, 135, 0.14), transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(14, 116, 144, 0.12), transparent 50%),
+          radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.4), #030408 100%);
+      }
+
+      .cosmic-panel {
+        background: rgba(10, 13, 24, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(167, 139, 250, 0.14);
+        border-radius: 16px;
+        box-shadow: 
+          0 20px 50px -15px rgba(0, 0, 0, 0.8),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+        transition: border-color 0.4s ease, box-shadow 0.4s ease;
+      }
+
+      .cosmic-panel:hover {
+        border-color: rgba(167, 139, 250, 0.4);
+        box-shadow: 
+          0 25px 60px -15px rgba(139, 92, 246, 0.18),
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      }
+
+      .nav-link.active {
+        color: #c084fc;
+        text-shadow: 0 0 12px rgba(192, 132, 252, 0.5);
+      }
+
+      /* Kölgə kimi yumşaq canlanma (Shadow-to-Clear Reveal) */
+      .shadow-emerge {
+        opacity: 0;
+        filter: blur(14px) brightness(0.3);
+        transform: translate3d(0, 48px, 0) scale(0.96);
+        transition: 
+          opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1),
+          filter 1.25s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: opacity, filter, transform;
+      }
+
+      .shadow-emerge.emerged {
+        opacity: 1;
+        filter: blur(0px) brightness(1);
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      /* Yumşaq parallax konteyner */
+      .scroll-parallax {
+        will-change: transform;
+      }
+    </style>
+  </head>
+  <body class="text-zinc-100 font-sans antialiased selection:bg-purple-500 selection:text-white overflow-x-hidden">
+    <!-- Galaxy & Deep Space Canvas -->
+    <canvas id="bg-canvas" class="fixed inset-0 -z-10 w-full h-full pointer-events-none"></canvas>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 translate-y-16 opacity-0 transition-all duration-300 bg-purple-500 text-white px-4 py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+      Copied to clipboard
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-[#030408]/75 backdrop-blur-xl border-b border-white/[0.06]">
+      <div id="scroll-progress" class="h-[2px] bg-gradient-to-r from-indigo-500 via-purple-400 to-cyan-300 w-0"></div>
+
+      <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href="#hero" class="font-mono text-xs font-bold tracking-wider uppercase text-zinc-100 hover:text-purple-300 transition flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_10px_#c084fc]"></span>
+          heravaso-dev.github.io
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden sm:flex items-center gap-7 font-mono text-xs text-zinc-400">
+          <a href="#about" data-nav="about" class="nav-link hover:text-zinc-100 transition">01. About</a>
+          <a href="#projects" data-nav="projects" class="nav-link hover:text-zinc-100 transition">02. Work</a>
+          <a href="#contact" data-nav="contact" class="nav-link hover:text-zinc-100 transition">03. Contact</a>
+        </nav>
+
+        <!-- Telemetry HUD -->
+        <div id="hud-telemetry" class="hidden lg:block font-mono text-[11px] text-zinc-400 tabular-nums bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+          SECTOR: 0% | VEL: 0.0
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="menu-btn" class="sm:hidden font-mono text-xs text-zinc-300 hover:text-purple-400">
+          [MENU]
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <nav id="mobile-menu" class="hidden sm:hidden border-t border-white/[0.06] bg-[#030408]/95 px-6 py-4 flex-col gap-3 font-mono text-xs text-zinc-300">
+        <a href="#about" class="mobile-link hover:text-purple-400">01. About</a>
+        <a href="#projects" class="mobile-link hover:text-purple-400">02. Work</a>
+        <a href="#contact" class="mobile-link hover:text-purple-400">03. Contact</a>
+      </nav>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6">
+      <!-- Hero -->
+      <section id="hero" class="min-h-[86vh] flex flex-col justify-center py-12">
+        <div class="scroll-parallax" data-speed="-0.06">
+          <div class="cosmic-panel p-8 sm:p-12 shadow-emerge">
+            <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-zinc-400 border-b border-white/[0.07] pb-5 mb-7">
+              <span class="tracking-wide uppercase text-purple-200/80">Software & Systems Engineer</span>
+              <span class="inline-flex items-center gap-2 text-cyan-300 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse"></span>
+                Available for work
+              </span>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-purple-200 mb-5">
+              Your Name
+            </h1>
+
+            <p class="max-w-2xl text-base sm:text-lg text-zinc-300/90 leading-relaxed mb-9">
+              Building fast, functional web software and interactive interfaces with clear structure and measurable performance.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+              <a href="#projects" class="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold uppercase tracking-wider hover:from-purple-400 hover:to-indigo-400 transition shadow-[0_0_25px_rgba(168,85,247,0.35)]">
+                Explore Galaxy
+              </a>
+              <a href="https://github.com/heravaso-dev" target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-lg border border-white/15 bg-white/[0.02] text-zinc-200 uppercase tracking-wider hover:border-purple-400/60 hover:text-purple-300 transition">
+                GitHub Profile ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About & Capabilities -->
+      <section id="about" class="py-24">
+        <div class="scroll-parallax" data-speed="-0.04">
+          <div class="cosmic-panel p-8 sm:p-10 shadow-emerge">
+            <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">01 // Architecture & Stack</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">System Capabilities</h2>
+            <p class="text-sm sm:text-base text-zinc-300/80 max-w-2xl leading-relaxed mb-8">
+              Engineered with fluid inertia physics and zero framework overhead. Scroll momentum warps the spiral galaxy field while sections emerge smoothly from deep space.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Languages</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">JS / TypeScript / Python</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Graphics</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">HTML5 Canvas / WebGL</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Infrastructure</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Linux / Docker / CI/CD</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 hover:border-purple-400/40 transition">
+                <div class="font-mono text-[11px] text-zinc-500 uppercase">Core Focus</div>
+                <div class="text-sm font-semibold text-zinc-100 mt-1.5">Fluidity & Precision</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects" class="py-24">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-8 shadow-emerge">
+          <div>
+            <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">02 // Selected Work</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">Featured Repositories</h2>
+          </div>
+          <span id="repo-status" class="font-mono text-xs text-zinc-400 bg-white/[0.03] px-3 py-1 rounded-full border border-white/[0.06]">
+            SYNCING...
+          </span>
+        </div>
+
+        <div id="projects-grid" class="grid sm:grid-cols-2 gap-6">
+          <div class="scroll-parallax" data-speed="-0.03">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between shadow-emerge">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>01 // SPIRAL_GALAXY</span>
+                  <span class="text-cyan-300 bg-cyan-400/10 px-2.5 py-0.5 rounded-full">JavaScript</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Orbital Particle Simulation</h3>
+                <p class="text-sm text-zinc-300/80 leading-relaxed mb-6">
+                  Logarithmic spiral arm starfield with inertial scroll rotation, gravitational cursor lensing, and nebula dust.
+                </p>
+              </div>
+              <a href="https://github.com/heravaso-dev" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-purple-300 uppercase tracking-wider hover:text-purple-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+
+          <div class="scroll-parallax" data-speed="-0.06">
+            <article class="cosmic-panel p-7 h-full flex flex-col justify-between shadow-emerge" style="transition-delay: 140ms;">
+              <div>
+                <div class="flex justify-between font-mono text-xs text-zinc-400 mb-3">
+                  <span>02 // STATIC_ARCH</span>
+                  <span class="text-purple-300 bg-purple-400/10 px-2.5 py-0.5 rounded-full">HTML / CSS</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2.5">Cosmic Portfolio Engine</h3>
+                <p class="text-sm text-zinc-300/80 leading-relaxed mb-6">
+                  Zero-dependency static architecture engineered for silky-smooth rendering on GitHub Pages.
+                </p>
+              </div>
+              <a href="https://github.com/heravaso-dev" target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-purple-300 uppercase tracking-wider hover:text-purple-200 inline-flex items-center gap-1.5">
+                View Source <span>→</span>
+              </a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="py-24">
+        <div class="scroll-parallax" data-speed="-0.02">
+          <div class="cosmic-panel p-8 sm:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-emerge">
+            <div>
+              <div class="font-mono text-xs text-purple-400 uppercase tracking-widest mb-2">03 // Subspace Channel</div>
+              <h2 class="text-2xl font-bold text-white">Initiate Contact</h2>
+              <p class="text-sm text-zinc-300/80 mt-1.5 max-w-md">
+                Open for software engineering roles, system architecture consulting, and creative technical builds.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3 shrink-0 font-mono">
+              <button id="copy-email-btn" data-email="you@example.com" class="px-5 py-3 rounded-lg border border-white/15 text-zinc-200 text-xs uppercase tracking-wider hover:border-purple-400/60 hover:text-purple-300 transition">
+                Copy Email
+              </button>
+              <a href="mailto:you@example.com" class="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold uppercase tracking-wider hover:from-purple-400 hover:to-indigo-400 transition text-center shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                you@example.com
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-white/[0.06] py-8 mt-8 text-center font-mono text-xs text-zinc-500">
+      <span id="year"></span> Your Name // heravaso-dev.github.io
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
